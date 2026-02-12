@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Particles from "@/components/Particles";
 import ProgressTracker from "@/components/ProgressTracker";
 import StartStop from "@/components/stops/StartStop";
 import AboutStop from "@/components/stops/AboutStop";
@@ -22,7 +24,7 @@ const Index = () => {
     setCurrentStop(1);
     setTimeout(() => {
       stopRefs.current[1]?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
+    }, 200);
   };
 
   const handleStopClick = (stop: number) => {
@@ -32,7 +34,6 @@ const Index = () => {
     stopRefs.current[stop]?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Track scroll position to update current stop
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -43,7 +44,7 @@ const Index = () => {
           }
         });
       },
-      { threshold: 0.4 }
+      { threshold: 0.3 }
     );
 
     stopRefs.current.forEach((ref) => {
@@ -55,8 +56,21 @@ const Index = () => {
 
   const stopNames = busStops.map((s) => s.label);
 
+  const stops = [
+    <AboutStop key="about" />,
+    <SkillsStop key="skills" />,
+    <EducationStop key="edu" />,
+    <InternshipStop key="intern" />,
+    <ProjectsStop key="proj" />,
+    <CertificationsStop key="cert" />,
+    <ResumeStop key="resume" />,
+    <ContactStop key="contact" />,
+  ];
+
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background min-h-screen relative">
+      <Particles />
+
       {journeyStarted && (
         <ProgressTracker currentStop={currentStop} onStopClick={handleStopClick} />
       )}
@@ -65,54 +79,36 @@ const Index = () => {
         <StartStop onStart={handleStart} />
       </div>
 
-      {journeyStarted && (
-        <>
-          <StopDivider nextStop={stopNames[1]} />
-          <div ref={(el) => { stopRefs.current[1] = el; }}>
-            <AboutStop />
-          </div>
+      <AnimatePresence>
+        {journeyStarted && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            {stops.map((StopComponent, idx) => (
+              <div key={idx}>
+                <StopDivider nextStop={stopNames[idx + 1]} />
+                <div ref={(el) => { stopRefs.current[idx + 1] = el; }}>
+                  {StopComponent}
+                </div>
+              </div>
+            ))}
 
-          <StopDivider nextStop={stopNames[2]} />
-          <div ref={(el) => { stopRefs.current[2] = el; }}>
-            <SkillsStop />
-          </div>
-
-          <StopDivider nextStop={stopNames[3]} />
-          <div ref={(el) => { stopRefs.current[3] = el; }}>
-            <EducationStop />
-          </div>
-
-          <StopDivider nextStop={stopNames[4]} />
-          <div ref={(el) => { stopRefs.current[4] = el; }}>
-            <InternshipStop />
-          </div>
-
-          <StopDivider nextStop={stopNames[5]} />
-          <div ref={(el) => { stopRefs.current[5] = el; }}>
-            <ProjectsStop />
-          </div>
-
-          <StopDivider nextStop={stopNames[6]} />
-          <div ref={(el) => { stopRefs.current[6] = el; }}>
-            <CertificationsStop />
-          </div>
-
-          <StopDivider nextStop={stopNames[7]} />
-          <div ref={(el) => { stopRefs.current[7] = el; }}>
-            <ResumeStop />
-          </div>
-
-          <StopDivider nextStop={stopNames[8]} />
-          <div ref={(el) => { stopRefs.current[8] = el; }}>
-            <ContactStop />
-          </div>
-
-          {/* Footer */}
-          <div className="text-center py-10 text-muted-foreground text-xs font-display">
-            🚌 End of Journey — Built by Seyed Omer S.A
-          </div>
-        </>
-      )}
+            {/* Footer */}
+            <motion.div
+              className="text-center py-12"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              <p className="text-muted-foreground/50 text-xs font-display">
+                🚌 End of Journey — Built with ❤️ by Seyed Omer S.A
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
