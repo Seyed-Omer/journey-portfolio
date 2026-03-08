@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { busStops } from "@/data/portfolio";
 import BusIcon from "./BusIcon";
@@ -8,6 +9,18 @@ interface ProgressTrackerProps {
 }
 
 const ProgressTracker = ({ currentStop, onStopClick }: ProgressTrackerProps) => {
+  const [isMoving, setIsMoving] = useState(false);
+  const prevStop = useRef(currentStop);
+
+  useEffect(() => {
+    if (prevStop.current !== currentStop) {
+      setIsMoving(true);
+      const timeout = setTimeout(() => setIsMoving(false), 900);
+      prevStop.current = currentStop;
+      return () => clearTimeout(timeout);
+    }
+  }, [currentStop]);
+
   return (
     <div className="fixed top-0 left-0 right-0 z-50 glass py-3 px-4">
       <div className="max-w-5xl mx-auto relative">
@@ -28,6 +41,15 @@ const ProgressTracker = ({ currentStop, onStopClick }: ProgressTrackerProps) => 
               onClick={() => onStopClick(stop.id)}
               className="flex flex-col items-center group relative"
             >
+              {/* Pulse ring when bus arrives */}
+              {stop.id === currentStop && !isMoving && (
+                <motion.div
+                  className="absolute w-5 h-5 rounded-full -mt-[14px] border border-primary/50"
+                  initial={{ scale: 0.5, opacity: 1 }}
+                  animate={{ scale: 2, opacity: 0 }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                />
+              )}
               <div
                 className={`w-3 h-3 rounded-full -mt-[10px] transition-all duration-300 ${
                   stop.id <= currentStop ? "stop-marker" : "bg-road"
@@ -52,7 +74,7 @@ const ProgressTracker = ({ currentStop, onStopClick }: ProgressTrackerProps) => 
           }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
         >
-          <BusIcon className="w-10 h-6" />
+          <BusIcon className="w-10 h-6" isMoving={isMoving} />
         </motion.div>
       </div>
     </div>
