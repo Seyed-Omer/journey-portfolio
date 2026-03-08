@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import BusIcon from "../BusIcon";
+import BusIcon from "./BusIcon";
 
 interface StopDividerProps {
   nextStop: string;
